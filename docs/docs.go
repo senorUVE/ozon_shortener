@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/generate": {
+        "/url/generate": {
             "post": {
                 "description": "Принимает оригинальные URL и возвращает их короткие версии",
                 "produces": [
@@ -81,8 +81,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/get-original": {
-            "post": {
+        "/url/original": {
+            "get": {
                 "description": "Принимает сокращённые ссылки и возвращает их оригинальные версии",
                 "produces": [
                     "application/json"

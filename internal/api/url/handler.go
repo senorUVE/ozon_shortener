@@ -28,7 +28,7 @@ func New(
 // @Success 200 {object} object{links=map[string]string} "Список оригинальных и сокращенных ссылок"
 // @Failure 400 {object} object{error=string} "Неверный запрос"
 // @Failure 500 {object} object{error=string} "Ошибка на сервере"
-// @Router /generate [post]
+// @Router /url/generate [post]
 func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req struct {
@@ -67,7 +67,7 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} object{links=map[string]string} "Список сокращённых и оригинальных ссылок"
 // @Failure 400 {object} object{error=string} "Неверный запрос"
 // @Failure 500 {object} object{error=string} "Ошибка на сервере"
-// @Router /get-original [post]
+// @Router /url/original [get]
 func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

@@ -6,7 +6,7 @@ info:
   title: URL shortener
   version: "1.0"
 paths:
-  /generate:
+  /url/generate:
     post:
       description: Принимает оригинальные URL и возвращает их короткие версии
       parameters:
@@ -48,8 +48,8 @@ paths:
                 type: string
             type: object
       summary: Создать короткую ссылку
-  /get-original:
-    post:
+  /url/original:
+    get:
       description: Принимает сокращённые ссылки и возвращает их оригинальные версии
       parameters:
       - description: Массив сокращённых ссылок
