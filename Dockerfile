@@ -4,7 +4,7 @@ WORKDIR /service
 
 COPY . .
 
-#RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 RUN go build -o bin/service cmd/service/main.go
 
 EXPOSE 8080

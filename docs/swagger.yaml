@@ -1,0 +1,93 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact: {}
+  description: URL shortener on go
+  title: URL shortener
+  version: "1.0"
+paths:
+  /generate:
+    post:
+      description: Принимает оригинальные URL и возвращает их короткие версии
+      parameters:
+      - description: Массив оригинальных URL
+        in: body
+        name: original_urls
+        required: true
+        schema:
+          properties:
+            OriginalUrls:
+              items:
+                type: string
+              type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список оригинальных и сокращенных ссылок
+          schema:
+            properties:
+              links:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Ошибка на сервере
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Создать короткую ссылку
+  /get-original:
+    post:
+      description: Принимает сокращённые ссылки и возвращает их оригинальные версии
+      parameters:
+      - description: Массив сокращённых ссылок
+        in: body
+        name: short_urls
+        required: true
+        schema:
+          properties:
+            ShortUrls:
+              items:
+                type: string
+              type: array
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список сокращённых и оригинальных ссылок
+          schema:
+            properties:
+              links:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Ошибка на сервере
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Получить оригинальные ссылки
+swagger: "2.0"

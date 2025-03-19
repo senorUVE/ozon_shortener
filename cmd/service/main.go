@@ -10,6 +10,8 @@ import (
 	"ozon_shortener/internal/repository"
 	"ozon_shortener/internal/services/url"
 
+	_ "ozon_shortener/docs"
+
 	_ "github.com/lib/pq"
 
 	httpSwagger "github.com/swaggo/http-swagger"
