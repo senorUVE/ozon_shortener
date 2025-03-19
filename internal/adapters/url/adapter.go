@@ -8,6 +8,7 @@ import (
 type UrlAdapters interface {
 	GenerateUrls(ctx context.Context, originalUrls []string) (map[string]string, error)
 	GetOriginal(ctx context.Context, shortUrls []string) (map[string]string, error)
+	PublicURL() string
 }
 
 type adapter struct {
@@ -28,4 +29,8 @@ func (a *adapter) GenerateUrls(ctx context.Context, originalUrls []string) (map[
 
 func (a *adapter) GetOriginal(ctx context.Context, shortUrls []string) (map[string]string, error) {
 	return a.service.GetOriginal(ctx, shortUrls)
+}
+
+func (a *adapter) PublicURL() string {
+	return a.service.PublicURL()
 }

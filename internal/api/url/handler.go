@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	urladapter "ozon_shortener/internal/adapters/url"
+
+	"github.com/gorilla/mux"
 	//"ozon_shortener/internal/middleware/validator"
 )
 
@@ -98,4 +100,24 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
+}
+
+func (h *Handler) RedirectToOriginal(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	token := mux.Vars(r)["token"]
+
+	shortURL := fmt.Sprintf("%s/%s", h.urlAdapter.PublicURL(), token)
+	res, err := h.urlAdapter.GetOriginal(ctx, []string{shortURL})
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	originalURL, ok := res[shortURL]
+	if !ok || originalURL == "" {
+		http.Error(w, "URL not found", http.StatusNotFound)
+		return
+	}
+
+	http.Redirect(w, r, originalURL, http.StatusTemporaryRedirect)
 }

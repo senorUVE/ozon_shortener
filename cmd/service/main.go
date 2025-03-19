@@ -30,7 +30,7 @@ const (
 // @version    1.0
 // @description  URL shortener on go
 // @host      localhost:8080
-// @BasePath    /api/v1
+// @BasePath    /api
 func main() {
 	os.Exit(run())
 }
@@ -76,8 +76,8 @@ func run() (exitCode int) {
 	urlRouter.HandleFunc("/generate", handler.CreateURL).Methods("POST")
 	urlRouter.HandleFunc("/original", handler.GetOriginal).Methods("GET")
 
-	slog.Info("start serve", slog.String("url", cfg.App.Url))
-	if err := http.ListenAndServe(cfg.App.Url, r); err != nil {
+	slog.Info("start serve", slog.String("url", cfg.App.ListenAddr))
+	if err := http.ListenAndServe(cfg.App.ListenAddr, r); err != nil {
 		slog.Error("serve", "err", err)
 		return failExitCode
 	}

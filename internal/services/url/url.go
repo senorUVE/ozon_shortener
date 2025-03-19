@@ -15,6 +15,7 @@ import (
 type Service interface {
 	CreateURL(ctx context.Context, originalUrls []string) (map[string]string, error)
 	GetOriginal(ctx context.Context, shortUrls []string) (map[string]string, error)
+	PublicURL() string
 }
 
 type service struct {
@@ -80,7 +81,7 @@ func (s *service) CreateURL(ctx context.Context, originalUrls []string) (map[str
 			return nil, fmt.Errorf("update url with token: %w", err)
 		}
 
-		result[origURL] = fmt.Sprintf("%s/%s", s.domain, token)
+		result[origURL] = fmt.Sprintf("http://%s/%s", s.domain, token)
 	}
 
 	return result, nil
@@ -115,4 +116,8 @@ func (s *service) GetOriginal(ctx context.Context, shortUrls []string) (map[stri
 		}
 	}
 	return mapping, nil
+}
+
+func (s *service) PublicURL() string {
+	return s.domain
 }
