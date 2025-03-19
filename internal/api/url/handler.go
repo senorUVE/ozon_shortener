@@ -6,19 +6,23 @@ import (
 	"net/http"
 	urladapter "ozon_shortener/internal/adapters/url"
 
+	"ozon_shortener/internal/middleware/validator"
+
 	"github.com/gorilla/mux"
-	//"ozon_shortener/internal/middleware/validator"
 )
 
 type Handler struct {
 	urlAdapter urladapter.UrlAdapters
+	validator  *validator.Validator
 }
 
 func New(
 	urlAdapter urladapter.UrlAdapters,
+	validator *validator.Validator,
 ) *Handler {
 	return &Handler{
 		urlAdapter: urlAdapter,
+		validator:  validator,
 	}
 }
 
@@ -40,6 +44,12 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 		return
+	}
+
+	if err := h.validator.ValidateURLs(req.OriginalUrls); err != nil {
+		http.Error(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+		return
+
 	}
 
 	res, err := h.urlAdapter.GenerateUrls(ctx, req.OriginalUrls)
@@ -105,6 +115,11 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RedirectToOriginal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	token := mux.Vars(r)["token"]
+
+	if err := h.validator.ValidateKey(token); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid token: %v", err), http.StatusBadRequest)
+		return
+	}
 
 	shortURL := fmt.Sprintf("%s/%s", h.urlAdapter.PublicURL(), token)
 	res, err := h.urlAdapter.GetOriginal(ctx, []string{shortURL})

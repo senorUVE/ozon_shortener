@@ -64,15 +64,15 @@ func (s *service) CreateURL(ctx context.Context, originalUrls []string) (map[str
 		}
 
 		token := bijection.ConvertNumberToKey(idNum)
-		if len(token) < 10 {
+		switch {
+		case len(token) < 10:
 			randomPartLength := 10 - len(token)
 			randomPart, err := random.GenerateRandom(randomPartLength)
 			if err != nil {
 				return nil, fmt.Errorf("generate random string: %w", err)
 			}
 			token = randomPart + token
-		}
-		if len(token) > 10 {
+		case len(token) > 10: //switch вместо
 			token = token[:10]
 		}
 

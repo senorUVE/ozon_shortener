@@ -7,7 +7,9 @@ import (
 	adapters "ozon_shortener/internal/adapters/url"
 	handlers "ozon_shortener/internal/api/url"
 	"ozon_shortener/internal/config"
+	"ozon_shortener/internal/middleware/validator"
 	"ozon_shortener/internal/repository"
+	"ozon_shortener/internal/repository/memory"
 	"ozon_shortener/internal/services/url"
 
 	_ "ozon_shortener/docs"
@@ -24,6 +26,7 @@ import (
 const (
 	successExitCode = 0
 	failExitCode    = 1
+	letters         = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 )
 
 // @title      URL shortener
@@ -36,6 +39,7 @@ func main() {
 }
 
 func run() (exitCode int) {
+	v := validator.NewValidator(letters)
 	cfg := config.Config{}
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		slog.Error("init config", "err", err)
@@ -54,13 +58,19 @@ func run() (exitCode int) {
 		return failExitCode
 	}
 
-	dao := repository.NewRepository(db)
-
+	var dao repository.DAO
+	switch cfg.App.StorageType {
+	case "memory":
+		memRepo := memory.NewMemoryRepository()
+		dao = memory.NewMemoryDAO(memRepo)
+	default:
+		dao = repository.NewRepository(db)
+	}
 	urlSrv := url.New(dao, cfg.App.Url)
 
 	urlAdapters := adapters.New(urlSrv)
 
-	handler := handlers.New(urlAdapters)
+	handler := handlers.New(urlAdapters, v)
 
 	r := mux.NewRouter()
 
@@ -76,28 +86,13 @@ func run() (exitCode int) {
 	urlRouter.HandleFunc("/generate", handler.CreateURL).Methods("POST")
 	urlRouter.HandleFunc("/original", handler.GetOriginal).Methods("GET")
 
+	urlRouter.HandleFunc("/{token}", handler.RedirectToOriginal).Methods("GET")
+
 	slog.Info("start serve", slog.String("url", cfg.App.ListenAddr))
 	if err := http.ListenAndServe(cfg.App.ListenAddr, r); err != nil {
 		slog.Error("serve", "err", err)
 		return failExitCode
 	}
-
-	// server := &http.Server{
-	// 	Addr:    cfg.App.Url,
-	// 	Handler: r,
-	// }
-	// lis, err := net.Listen("tcp", cfg.App.Url)
-	// if err != nil {
-	// 	slog.Error("take port", "err", err)
-	// 	return failExitCode
-	// }
-
-	// slog.Info("start serve", slog.String("app url", cfg.App.Url))
-	// if err := server.Serve(lis); err != nil {
-	// 	slog.Error("take port", "err", err)
-	// 	return failExitCode
-	// }
-	// return successExitCode
 
 	return successExitCode
 }

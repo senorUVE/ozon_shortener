@@ -16,7 +16,7 @@ func NewValidator(allowedLetters string) *Validator {
 	}
 }
 
-func (v *Validator) validateKey(key string) error {
+func (v *Validator) ValidateKey(key string) error {
 	if key == "" {
 		return errors.New("key must be at least 1 letter long")
 	}
@@ -44,9 +44,9 @@ func (v *Validator) validateKey(key string) error {
 	return nil
 }
 
-func (v *Validator) validateKeys(keys []string) error {
+func (v *Validator) ValidateKeys(keys []string) error {
 	for _, key := range keys {
-		if err := v.validateKey(key); err != nil {
+		if err := v.ValidateKey(key); err != nil {
 			return err
 		}
 	}
@@ -54,9 +54,9 @@ func (v *Validator) validateKeys(keys []string) error {
 	return nil
 }
 
-func (v *Validator) validateURL(URL string) error {
-	if len(URL) > 2000 {
-		return errors.New("URL must be maximum 2000 letters long")
+func (v *Validator) ValidateURL(URL string) error {
+	if len(URL) > 2048 {
+		return errors.New("URL must be maximum 2048 letters long")
 	}
 
 	if URL == "" {
@@ -76,11 +76,11 @@ func (v *Validator) validateURL(URL string) error {
 	return nil
 }
 
-func (v *Validator) validateURLs(URLs []string) error {
+func (v *Validator) ValidateURLs(URLs []string) error {
 	uniqueURLs := make(map[string]bool, len(URLs))
 
 	for _, URL := range URLs {
-		err := v.validateURL(URL)
+		err := v.ValidateURL(URL)
 
 		if err != nil {
 			return err
