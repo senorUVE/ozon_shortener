@@ -3,6 +3,7 @@ package url
 import (
 	"context"
 	"fmt"
+	"log"
 	"ozon_shortener/internal/repository"
 	"ozon_shortener/internal/repository/entity"
 	"ozon_shortener/internal/utils/bijection"
@@ -72,7 +73,7 @@ func (s *service) CreateURL(ctx context.Context, originalUrls []string) (map[str
 				return nil, fmt.Errorf("generate random string: %w", err)
 			}
 			token = randomPart + token
-		case len(token) > 10: //switch вместо
+		case len(token) > 10:
 			token = token[:10]
 		}
 
@@ -119,5 +120,7 @@ func (s *service) GetOriginal(ctx context.Context, shortUrls []string) (map[stri
 }
 
 func (s *service) PublicURL() string {
+
+	log.Printf("PublicURL() called, returning: %s", s.domain)
 	return s.domain
 }

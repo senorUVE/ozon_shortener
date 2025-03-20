@@ -6,7 +6,6 @@ toolchain go1.24.1
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/WantBeASleep/med_ml_lib v1.0.8
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/ilyakaznacheev/cleanenv v1.5.0
@@ -31,6 +30,7 @@ require (
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/tools v0.31.0 // indirect

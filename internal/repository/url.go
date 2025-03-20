@@ -5,7 +5,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
-	daolib "github.com/WantBeASleep/med_ml_lib/dao"
+	daolib "ozon_shortener/dao"
 )
 
 const urlTable = "url"

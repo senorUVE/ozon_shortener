@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	daolib "ozon_shortener/dao"
 
-	daolib "github.com/WantBeASleep/med_ml_lib/dao"
 	"github.com/jmoiron/sqlx"
 )
 

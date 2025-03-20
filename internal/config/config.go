@@ -1,9 +1,8 @@
 package config
 
 type Config struct {
-	App      App
-	DB       DB
-	Adapters Adapters
+	App App
+	DB  DB
 }
 
 type App struct {
@@ -14,8 +13,4 @@ type App struct {
 
 type DB struct {
 	Dsn string `env:"DB_DSN" env-required:"true"`
-}
-
-type Adapters struct {
-	Url string `env:"ADAPTERS_URL"`
 }

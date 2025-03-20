@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var RandRead = rand.Read // для тестиков
+
 func GenerateRandom(length int) (string, error) {
 	const letters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
 	bytes := make([]byte, length)

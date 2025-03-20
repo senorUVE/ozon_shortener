@@ -6,7 +6,7 @@ import (
 
 	"ozon_shortener/internal/repository"
 
-	daolib "github.com/WantBeASleep/med_ml_lib/dao"
+	daolib "ozon_shortener/dao"
 )
 
 type MemoryDAO struct {
