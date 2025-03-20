@@ -11,7 +11,7 @@
       POSTGRES_PASSWORD: 
       POSTGRES_DATABASE: 
 ```
-DB_DSN,GOOSE_DBSTRING для локального обращения
+DB_DSN,GOOSE_DBSTRING для локального обращения,
 APP_* можно не менять, если не требуется запускать локально.
 
 В `.env-docker`:
