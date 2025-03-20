@@ -50,7 +50,7 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.service.CreateURL(ctx, req.OriginalUrls)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Internal error creating urls: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.service.GetOriginal(ctx, req.ShortUrls)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Internal error getting original urls: %v", err), http.StatusInternalServerError)
 		return
 	}
 
