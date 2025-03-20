@@ -108,6 +108,21 @@ func (mr *MockUrlQueryMockRecorder) InsertUrl(url interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUrl", reflect.TypeOf((*MockUrlQuery)(nil).InsertUrl), url)
 }
 
+// InsertUrlReturning mocks base method.
+func (m *MockUrlQuery) InsertUrlReturning(url entity.URL) (entity.URL, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertUrlReturning", url)
+	ret0, _ := ret[0].(entity.URL)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertUrlReturning indicates an expected call of InsertUrlReturning.
+func (mr *MockUrlQueryMockRecorder) InsertUrlReturning(url interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUrlReturning", reflect.TypeOf((*MockUrlQuery)(nil).InsertUrlReturning), url)
+}
+
 // UpdateURL mocks base method.
 func (m *MockUrlQuery) UpdateURL(url entity.URL) error {
 	m.ctrl.T.Helper()

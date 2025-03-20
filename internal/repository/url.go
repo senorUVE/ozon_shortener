@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"ozon_shortener/internal/repository/entity"
 
 	sq "github.com/Masterminds/squirrel"
@@ -17,6 +19,7 @@ type UrlQuery interface {
 	GetUrlByOriginal(originalUrl string) (entity.URL, error)
 	GetByTokens(tokens []string) ([]entity.URL, error)
 	UpdateURL(url entity.URL) error
+	InsertUrlReturning(url entity.URL) (entity.URL, error)
 }
 
 type urlQuery struct {
@@ -83,7 +86,12 @@ func (q *urlQuery) GetUrlByOriginal(originalUrl string) (entity.URL, error) {
 		"original_url": originalUrl,
 	})
 	var url entity.URL
-	if err := q.Runner().Getx(q.Context(), &url, query); err != nil {
+	err := q.Runner().Getx(q.Context(), &url, query)
+	if err != nil {
+
+		if errors.Is(err, sql.ErrNoRows) || err.Error() == "not found" {
+			return entity.URL{}, nil
+		}
 		return entity.URL{}, err
 	}
 	return url, nil
@@ -113,4 +121,18 @@ func (q *urlQuery) UpdateURL(url entity.URL) error {
 	})
 	_, err := q.Runner().Execx(q.Context(), query)
 	return err
+}
+
+func (q *urlQuery) InsertUrlReturning(url entity.URL) (entity.URL, error) {
+	query := q.QueryBuilder().
+		Insert(urlTable).
+		Columns("original_url", "token").
+		Values(url.OriginalUrl, url.Token).
+		Suffix("RETURNING id, original_url, token")
+
+	var inserted entity.URL
+	if err := q.Runner().Getx(q.Context(), &inserted, query); err != nil {
+		return entity.URL{}, err
+	}
+	return inserted, nil
 }

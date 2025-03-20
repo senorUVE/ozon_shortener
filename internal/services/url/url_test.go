@@ -8,6 +8,8 @@ import (
 
 	"ozon_shortener/internal/repository/entity"
 	"ozon_shortener/internal/services/url"
+	"ozon_shortener/internal/utils/bijection"
+	"ozon_shortener/internal/utils/random"
 
 	repoMocks "ozon_shortener/internal/repository/mocks"
 
@@ -15,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestServiceCreateURLSuccess(t *testing.T) {
+func TestService_CreateURL_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -32,25 +34,33 @@ func TestServiceCreateURLSuccess(t *testing.T) {
 
 	mockQuery.EXPECT().GetUrlByOriginal(origURL).Return(entity.URL{}, errors.New("not found")).Times(1)
 
-	mockQuery.EXPECT().InsertUrl(gomock.Any()).Return(nil).Times(1)
-
+	newEntity := entity.URL{
+		OriginalUrl: origURL,
+		Token:       "",
+	}
 	insertedRecord := entity.URL{
 		Id:          "10",
 		OriginalUrl: origURL,
 		Token:       "",
 	}
-	mockQuery.EXPECT().GetUrlByOriginal(origURL).Return(insertedRecord, nil).Times(1)
+	mockQuery.EXPECT().InsertUrlReturning(newEntity).Return(insertedRecord, nil).Times(1)
 
+	origRandRead := random.RandRead
+	random.RandRead = func(b []byte) (int, error) {
+		if len(b) == 9 {
+			copy(b, []byte("123456789"))
+			return 9, nil
+		}
+		return 0, errors.New("unexpected length")
+	}
+	defer func() { random.RandRead = origRandRead }()
+
+	var capturedToken string
 	mockQuery.EXPECT().UpdateURL(gomock.Any()).DoAndReturn(
 		func(u entity.URL) error {
+			capturedToken = u.Token
 			if u.Id != "10" || u.OriginalUrl != origURL {
 				return errors.New("unexpected record")
-			}
-			if len(u.Token) != 10 {
-				return errors.New("token length is not 10")
-			}
-			if u.Token[len(u.Token)-1:] != "a" {
-				return errors.New("token does not end with 'a'")
 			}
 			return nil
 		},
@@ -59,16 +69,15 @@ func TestServiceCreateURLSuccess(t *testing.T) {
 	result, err := svc.CreateURL(ctx, []string{origURL})
 	assert.NoError(t, err)
 
-	shortURL := result[origURL]
-	prefix := "http://localhost:8080/"
-	assert.True(t, strings.HasPrefix(shortURL, prefix), "shortURL should start with %s", prefix)
+	expectedShortURL := "http://localhost:8080/" + capturedToken
+	assert.Equal(t, expectedShortURL, result[origURL])
 
-	token := shortURL[len(prefix):]
-	assert.Equal(t, 10, len(token), "token length should be 10")
-	assert.Equal(t, "a", token[len(token)-1:], "token should end with 'a'")
+	assert.Equal(t, 10, len(capturedToken))
+	tokenPart := bijection.ConvertNumberToKey(10)
+	assert.Equal(t, tokenPart, capturedToken[len(capturedToken)-len(tokenPart):])
 
 	const allowedRandom = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
-	for i, r := range token[:9] {
+	for i, r := range capturedToken[:9] {
 		assert.True(t, strings.ContainsRune(allowedRandom, r), "character %q at index %d is not allowed", r, i)
 	}
 }

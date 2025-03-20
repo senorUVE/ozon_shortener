@@ -36,27 +36,28 @@ func New(
 }
 
 func (s *service) CreateURL(ctx context.Context, originalUrls []string) (map[string]string, error) {
-
 	result := make(map[string]string)
 	urlQuery := s.dao.NewUrlQuery(ctx)
 
 	for _, origURL := range originalUrls {
 		existing, err := urlQuery.GetUrlByOriginal(origURL)
-		if err == nil {
+		if err == nil && existing.Id != "" {
 			result[origURL] = fmt.Sprintf("%s/%s", s.domain, existing.Token)
 			continue
+		}
+		if err != nil && err.Error() != "not found" {
+			return nil, fmt.Errorf("get url by original: %w", err)
 		}
 
 		newEntity := entity.URL{
 			OriginalUrl: origURL,
+			Token:       "",
 		}
-		if err := urlQuery.InsertUrl(newEntity); err != nil {
-			return nil, fmt.Errorf("insert url: %w", err)
-		}
-
-		inserted, err := urlQuery.GetUrlByOriginal(origURL)
+		inserted, err := urlQuery.(interface {
+			InsertUrlReturning(entity.URL) (entity.URL, error)
+		}).InsertUrlReturning(newEntity)
 		if err != nil {
-			return nil, fmt.Errorf("get inserted url: %w", err)
+			return nil, fmt.Errorf("insert url: %w", err)
 		}
 
 		idNum, err := strconv.ParseInt(inserted.Id, 10, 64)

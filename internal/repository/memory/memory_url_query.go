@@ -47,3 +47,10 @@ func (q *memoryUrlQuery) GetUrlByToken(token string) (entity.URL, error) {
 	}
 	return entity.URL{}, errors.New("not found")
 }
+
+func (q *memoryUrlQuery) InsertUrlReturning(u entity.URL) (entity.URL, error) {
+	if err := q.store.InsertUrl(u); err != nil {
+		return entity.URL{}, err
+	}
+	return q.store.GetUrlByOriginal(u.OriginalUrl)
+}
