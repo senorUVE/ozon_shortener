@@ -4,34 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	urladapter "ozon_shortener/internal/adapters/url"
-
 	"ozon_shortener/internal/middleware/validator"
+	"ozon_shortener/internal/services/url"
 
 	"github.com/gorilla/mux"
 )
 
 type Handler struct {
-	urlAdapter urladapter.UrlAdapters
-	validator  *validator.Validator
+	service   url.Service
+	validator *validator.Validator
 }
 
-func New(
-	urlAdapter urladapter.UrlAdapters,
-	validator *validator.Validator,
-) *Handler {
+func New(service url.Service, validator *validator.Validator) *Handler {
 	return &Handler{
-		urlAdapter: urlAdapter,
-		validator:  validator,
+		service:   service,
+		validator: validator,
 	}
 }
 
-// CreateURL создает короткую ссылку
+// CreateURL создает короткие ссылки
 // @Summary Создать короткую ссылку
 // @Description Принимает оригинальные URL и возвращает их короткие версии
 // @Produce json
-// @Param original_urls body object{OriginalUrls=[]string} true "Массив оригинальных URL"
-// @Success 200 {object} object{links=map[string]string} "Список оригинальных и сокращенных ссылок"
+// @Param original_urls body object{original_urls=[]string} true "Массив оригинальных URL"
+// @Success 200 {object} object{urls=map[string]string} "Список оригинальных и сокращенных ссылок"
 // @Failure 400 {object} object{error=string} "Неверный запрос"
 // @Failure 500 {object} object{error=string} "Ошибка на сервере"
 // @Router /url/generate [post]
@@ -49,12 +45,11 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	if err := h.validator.ValidateURLs(req.OriginalUrls); err != nil {
 		http.Error(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
 		return
-
 	}
 
-	res, err := h.urlAdapter.GenerateUrls(ctx, req.OriginalUrls)
+	res, err := h.service.CreateURL(ctx, req.OriginalUrls)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("что-то пошло не так: %v", err), 500)
+		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -64,25 +59,24 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 		Urls: res,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		http.Error(w, fmt.Sprintf("что-то пошло не так: %v", err), 500)
+		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(200)
 }
 
 // GetOriginal обрабатывает запросы на получение оригинальных ссылок по сокращённым ссылкам
 // @Summary Получить оригинальные ссылки
-// @Description Принимает сокращённые ссылки и возвращает их оригинальные версии
+// @Description Принимает абсолютные короткие ссылки и возвращает их оригинальные версии
 // @Produce json
-// @Param short_urls body object{ShortUrls=[]string} true "Массив сокращённых ссылок"
-// @Success 200 {object} object{links=map[string]string} "Список сокращённых и оригинальных ссылок"
+// @Param short_urls body object{short_urls=[]string} true "Массив коротких ссылок (абсолютный URL)"
+// @Success 200 {object} object{urls=map[string]string} "Список сокращённых и оригинальных ссылок"
 // @Failure 400 {object} object{error=string} "Неверный запрос"
 // @Failure 500 {object} object{error=string} "Ошибка на сервере"
 // @Router /url/original [get]
 func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
 	var req struct {
 		ShortUrls []string `json:"short_urls"`
 	}
@@ -91,14 +85,15 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
+
 	if err := h.validator.ValidateURLs(req.ShortUrls); err != nil {
 		http.Error(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
 		return
 	}
 
-	res, err := h.urlAdapter.GetOriginal(ctx, req.ShortUrls)
+	res, err := h.service.GetOriginal(ctx, req.ShortUrls)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("что-то пошло не так: %v", err), 500)
+		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -108,12 +103,11 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 		Urls: res,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		http.Error(w, fmt.Sprintf("что-то пошло не так: %v", err), 500)
+		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(200)
 }
 
 func (h *Handler) RedirectToOriginal(w http.ResponseWriter, r *http.Request) {
@@ -124,9 +118,8 @@ func (h *Handler) RedirectToOriginal(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Invalid token: %v", err), http.StatusBadRequest)
 		return
 	}
-
-	shortURL := fmt.Sprintf("%s/%s", h.urlAdapter.PublicURL(), token)
-	res, err := h.urlAdapter.GetOriginal(ctx, []string{shortURL})
+	shortURL := fmt.Sprintf("http://%s/%s", h.service.PublicURL(), token)
+	res, err := h.service.GetOriginal(ctx, []string{shortURL})
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return

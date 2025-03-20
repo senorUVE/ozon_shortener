@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	adapters "ozon_shortener/internal/adapters/url"
 	handlers "ozon_shortener/internal/api/url"
 	"ozon_shortener/internal/config"
 	"ozon_shortener/internal/middleware/validator"
@@ -68,9 +67,7 @@ func run() (exitCode int) {
 	}
 	urlSrv := url.New(dao, cfg.App.Url)
 
-	urlAdapters := adapters.New(urlSrv)
-
-	handler := handlers.New(urlAdapters, v)
+	handler := handlers.New(urlSrv, v)
 
 	r := mux.NewRouter()
 
