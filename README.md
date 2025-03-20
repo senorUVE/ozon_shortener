@@ -1,21 +1,23 @@
 # Инструкция
 
-* В `.env` необходимо указать/поменять:
+В `.env` необходимо указать/поменять:
     + POSTGRES_DB=
     + POSTGRES_USER=
     + POSTGRES_PASSWORD=
 
-В **docker-compose** также указать
+В **docker-compose** также указать:
 ```
       POSTGRES_USER: 
       POSTGRES_PASSWORD: 
       POSTGRES_DATABASE: 
 ```
+DB_DSN,GOOSE_DBSTRING для локального обращения
+APP_* можно не менять, если не требуется запускать локально.
 
-в `.env-docker`:
-+ **STORAGE_TYPE** — тип хранилища: `memory` или `postgres`
-+ **APP_URL** - если нужно другой домен/порт у коротких ссылок.
-+ **DB_DSN** - если меняется хост/порт базы или пароли.
+В `.env-docker`:
+    + **STORAGE_TYPE** — тип хранилища: `memory` или `postgres`
+    + **APP_URL** - если нужно другой домен/порт у коротких ссылок.
+    + **DB_DSN** - если меняется хост/порт базы или пароли.
 
 ## Для запуска
 
