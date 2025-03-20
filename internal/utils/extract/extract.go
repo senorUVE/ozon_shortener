@@ -1,13 +1,24 @@
 package extract
 
-import "errors"
+import (
+	"errors"
+	"net/url"
+	"path"
+)
 
 var ErrInvalidShortUrl = errors.New("invalid short url")
 
-func ExtractToken(domain, fullURL string) (string, error) {
-	prefix := domain + "/"
-	if len(fullURL) <= len(prefix) || fullURL[:len(prefix)] != prefix {
+func ExtractToken(fullURL string) (string, error) {
+	parsed, err := url.Parse(fullURL)
+	if err != nil {
 		return "", ErrInvalidShortUrl
 	}
-	return fullURL[len(prefix):], nil
+	if parsed.Scheme == "" || parsed.Host == "" {
+		return "", ErrInvalidShortUrl
+	}
+	token := path.Base(parsed.Path)
+	if token == "" || token == "/" {
+		return "", ErrInvalidShortUrl
+	}
+	return token, nil
 }

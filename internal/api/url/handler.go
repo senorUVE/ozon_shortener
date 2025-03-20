@@ -91,6 +91,10 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
+	if err := h.validator.ValidateURLs(req.ShortUrls); err != nil {
+		http.Error(w, fmt.Sprintf("Validation error: %v", err), http.StatusBadRequest)
+		return
+	}
 
 	res, err := h.urlAdapter.GetOriginal(ctx, req.ShortUrls)
 	if err != nil {

@@ -90,7 +90,7 @@ func (s *service) CreateURL(ctx context.Context, originalUrls []string) (map[str
 func (s *service) GetOriginal(ctx context.Context, shortUrls []string) (map[string]string, error) {
 	tokens := make([]string, 0, len(shortUrls))
 	for _, fullURL := range shortUrls {
-		token, err := extract.ExtractToken(s.domain, fullURL)
+		token, err := extract.ExtractToken(fullURL)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func (s *service) GetOriginal(ctx context.Context, shortUrls []string) (map[stri
 	}
 	mapping := make(map[string]string)
 	for _, fullURL := range shortUrls {
-		token, _ := extract.ExtractToken(s.domain, fullURL)
+		token, _ := extract.ExtractToken(fullURL)
 		if orig, ok := tokenToOriginal[token]; ok {
 			mapping[fullURL] = orig
 		} else {
