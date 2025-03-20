@@ -81,7 +81,7 @@ func (s *service) CreateURL(ctx context.Context, originalUrls []string) (map[str
 			return nil, fmt.Errorf("update url with token: %w", err)
 		}
 
-		result[origURL] = fmt.Sprintf("http://%s/%s", s.domain, token)
+		result[origURL] = fmt.Sprintf("http://%s/%s", s.PublicURL(), token)
 	}
 
 	return result, nil

@@ -12,10 +12,10 @@ import (
 
 type Handler struct {
 	service   url.Service
-	validator *validator.Validator
+	validator validator.Validator
 }
 
-func New(service url.Service, validator *validator.Validator) *Handler {
+func New(service url.Service, validator validator.Validator) *Handler {
 	return &Handler{
 		service:   service,
 		validator: validator,
@@ -36,8 +36,9 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		OriginalUrls []string `json:"original_urls"`
 	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&req); err != nil {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
@@ -81,7 +82,9 @@ func (h *Handler) GetOriginal(w http.ResponseWriter, r *http.Request) {
 		ShortUrls []string `json:"short_urls"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&req); err != nil {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}

@@ -5,18 +5,25 @@ import (
 	"net/url"
 )
 
-type Validator struct {
+type Validator interface {
+	ValidateKey(key string) error
+	ValidateKeys(keys []string) error
+	ValidateURL(URL string) error
+	ValidateURLs(URLs []string) error
+}
+
+type validator struct {
 	KeyMaxLength   int
 	allowedLetters string
 }
 
-func NewValidator(allowedLetters string) *Validator {
-	return &Validator{
+func NewValidator(allowedLetters string) *validator {
+	return &validator{
 		allowedLetters: allowedLetters,
 	}
 }
 
-func (v *Validator) ValidateKey(key string) error {
+func (v *validator) ValidateKey(key string) error {
 	if key == "" {
 		return errors.New("key must be at least 1 letter long")
 	}
@@ -44,7 +51,7 @@ func (v *Validator) ValidateKey(key string) error {
 	return nil
 }
 
-func (v *Validator) ValidateKeys(keys []string) error {
+func (v *validator) ValidateKeys(keys []string) error {
 	for _, key := range keys {
 		if err := v.ValidateKey(key); err != nil {
 			return err
@@ -54,7 +61,7 @@ func (v *Validator) ValidateKeys(keys []string) error {
 	return nil
 }
 
-func (v *Validator) ValidateURL(URL string) error {
+func (v *validator) ValidateURL(URL string) error {
 	if len(URL) > 2048 {
 		return errors.New("URL must be maximum 2048 letters long")
 	}
@@ -76,7 +83,7 @@ func (v *Validator) ValidateURL(URL string) error {
 	return nil
 }
 
-func (v *Validator) ValidateURLs(URLs []string) error {
+func (v *validator) ValidateURLs(URLs []string) error {
 	uniqueURLs := make(map[string]bool, len(URLs))
 
 	for _, URL := range URLs {
